@@ -24,17 +24,18 @@ show_help() {
   cat <<EOF
 Usage: $(basename "$0") <options>
 
-    -h, --help               Display help
-    -v, --version            The chart-releaser version to use (default: $DEFAULT_CHART_RELEASER_VERSION)"
-        --config             The path to the chart-releaser config file
-    -d, --charts-dir         The charts directory (default: charts)
-    -o, --owner              The repo owner
-    -r, --repo               The repo name
-    -n, --install-dir        The Path to install the cr tool
-    -i, --install-only       Just install the cr tool
-    -s, --skip-packaging     Skip the packaging step (run your own packaging before using the releaser)
-        --skip-existing      Skip package upload if release exists
-    -l, --mark-as-latest     Mark the created GitHub release as 'latest' (default: true)
+    -h, --help                   Display help
+    -v, --version                The chart-releaser version to use (default: $DEFAULT_CHART_RELEASER_VERSION)"
+        --config                 The path to the chart-releaser config file
+    -d, --charts-dir             The charts directory (default: charts)
+    -o, --owner                  The repo owner
+    -r, --repo                   The repo name
+    -n, --install-dir            The Path to install the cr tool
+    -i, --install-only           Just install the cr tool
+    -s, --skip-packaging         Skip the packaging step (run your own packaging before using the releaser)
+        --skip-existing          Skip package upload if release exists
+    -l, --mark-as-latest         Mark the created GitHub release as 'latest' (default: true)
+    -p, --packages-with-index    Saves tar with index - supports private repos (default: false)
 EOF
 }
 
@@ -49,6 +50,7 @@ main() {
   local skip_packaging=
   local skip_existing=
   local mark_as_latest=true
+  local packages_with_index=false
 
   parse_command_line "$@"
 
@@ -194,6 +196,12 @@ parse_command_line() {
         shift
       fi
       ;;
+    -p | --packages-with-index)
+      if [[ -n "${2:-}" ]]; then
+        packages_with_index="$2"
+        shift
+      fi
+      ;;
     *)
       break
       ;;
@@ -284,6 +292,9 @@ package_chart() {
   local args=("$chart" --package-path .cr-release-packages)
   if [[ -n "$config" ]]; then
     args+=(--config "$config")
+  fi
+  if [[ "$packages_with_index" = true ]]; then
+    args+=(--packages-with-index)
   fi
 
   echo "Packaging chart '$chart'..."
