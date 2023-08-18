@@ -84,6 +84,10 @@ runs:
             args+=(--mark-as-latest "${{ inputs.mark_as_latest }}")
         fi
 
+        if [[ -n "${{ inputs.packages_with_index }}" ]]; then
+            args+=(--packages-with-index )
+        fi
+
         "$GITHUB_ACTION_PATH/cr.sh" "${args[@]}"
 
         if [[ -f changed_charts.txt ]]; then
